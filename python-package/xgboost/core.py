@@ -1221,3 +1221,18 @@ class Booster(object):
             return nph
         else:
             return nph
+
+    def get_tree_number(self):
+        value = ctypes.c_int(0)
+        _check_call(_LIB.XGBoosterGetTreeNumber(self.handle, ctypes.byref(value)))
+        return value
+
+    def get_tree_weight(self, index):
+        value = ctypes.c_float(0.)
+        _check_call(_LIB.XGBoosterGetTreeWeight(self.handle, ctypes.c_int(index), ctypes.byref(value)))
+        return value
+
+    def set_tree_weight(self, index, value):
+        new_value = ctypes.c_float(value)
+        _check_call(_LIB.XGBoosterSetTreeWeight(self.handle, ctypes.c_int(index), new_value))
+        return 0.
