@@ -737,3 +737,35 @@ XGB_DLL int XGBoosterSaveRabitCheckpoint(BoosterHandle handle) {
 
 // force link rabit
 static DMLC_ATTRIBUTE_UNUSED int XGBOOST_LINK_RABIT_C_API_ = RabitLinkTag();
+
+XGB_DLL int XGBoosterSetTreeWeight(BoosterHandle handle,
+                                   const int index,
+                                   const float value)
+{
+    API_BEGIN();
+    Booster* bst = static_cast<Booster*>(handle);
+    bst->learner()->GetBoosterPtr()->SetBoostedWeigth(index, value);
+    std::cerr << "XGBoosterSetTreeWeight: " << index << " " << value << std::endl;
+    API_END();
+}
+
+XGB_DLL int XGBoosterGetTreeWeight(BoosterHandle handle,
+                                   const int index,
+                                   float *value)
+{
+    API_BEGIN();
+    Booster* bst = static_cast<Booster*>(handle);
+    *value = bst->learner()->GetBoosterPtr()->GetBoostedWeigth(index);
+    std::cerr << "XGBoosterGetTreeWeight: " << index << " " << *value << std::endl;
+    API_END();
+}
+
+XGB_DLL int XGBoosterGetTreeNumber(BoosterHandle handle,
+                                   int* count)
+{
+    API_BEGIN();
+    Booster* bst = static_cast<Booster*>(handle);
+    *count = bst->learner()->GetBoosterPtr()->GetBoostedNumber();
+    std::cerr << "XGBoosterGetTreeNumber: " << *count << std::endl;
+    API_END();
+}

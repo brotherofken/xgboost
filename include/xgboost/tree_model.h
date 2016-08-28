@@ -81,10 +81,12 @@ class TreeModel {
   /*! \brief tree node */
   class Node {
    public:
-    Node() : sindex_(0) {
+    Node() : sindex_(0), my_tree(nullptr) {
+        std::cerr << "";
+    }
+    Node(TreeModel *my_tree_model) : sindex_(0), my_tree(my_tree_model) {
       // assert compact alignment
-      static_assert(sizeof(Node) == 4 * sizeof(int) + sizeof(Info),
-                    "Node: 64 bit align");
+      //static_assert(sizeof(Node) == 4 * sizeof(int) + sizeof(Info) + sizeof(decltype(nullptr)), "Node: 64 bit align");
     }
     /*! \brief index of left child */
     inline int cleft() const {
@@ -112,7 +114,10 @@ class TreeModel {
     }
     /*! \return get leaf value of leaf node */
     inline float leaf_value() const {
-      return (this->info_).leaf_value;
+      if(my_tree == nullptr) {
+        std::cerr << "fuck";
+      }
+      return (this->info_).leaf_value * this->my_tree->param.weight;
     }
     /*! \return get split condition of the node */
     inline TSplitCond split_cond() const {
@@ -188,6 +193,8 @@ class TreeModel {
     unsigned sindex_;
     // extra info
     Info info_;
+
+    TreeModel* my_tree;
     // set parent
     inline void set_parent(int pidx, bool is_left_child = true) {
       if (is_left_child) pidx |= (1U << 31);
@@ -216,7 +223,7 @@ protected:
     int nd = param.num_nodes++;
     CHECK_LT(param.num_nodes, std::numeric_limits<int>::max())
         << "number of nodes in the tree exceed 2^31";
-    nodes.resize(param.num_nodes);
+    nodes.resize(param.num_nodes, Node(this));
     stats.resize(param.num_nodes);
     leaf_vector.resize(param.num_nodes * param.size_leaf_vector);
     return nd;
@@ -266,7 +273,7 @@ protected:
     param.num_nodes = 1;
     param.num_roots = 1;
     param.num_deleted = 0;
-    nodes.resize(1);
+    nodes.resize(1, Node(this));
   }
   /*! \brief get node given nid */
   inline Node& operator[](int nid) {
@@ -297,7 +304,7 @@ protected:
   /*! \brief initialize the model */
   inline void InitModel() {
     param.num_nodes = param.num_roots;
-    nodes.resize(param.num_nodes);
+    nodes.resize(param.num_nodes, Node(this));
     stats.resize(param.num_nodes);
     leaf_vector.resize(param.num_nodes * param.size_leaf_vector, 0.0f);
     for (int i = 0; i < param.num_nodes; i ++) {
@@ -311,11 +318,14 @@ protected:
    */
   inline void Load(dmlc::Stream* fi) {
     CHECK_EQ(fi->Read(&param, sizeof(TreeParam)), sizeof(TreeParam));
-    nodes.resize(param.num_nodes);
+    nodes.resize(param.num_nodes, Node(this));
     stats.resize(param.num_nodes);
     CHECK_NE(param.num_nodes, 0);
     CHECK_EQ(fi->Read(dmlc::BeginPtr(nodes), sizeof(Node) * nodes.size()),
              sizeof(Node) * nodes.size());
+    for(Node& node : nodes) {
+      node.my_tree = this;
+    }
     CHECK_EQ(fi->Read(dmlc::BeginPtr(stats), sizeof(NodeStat) * stats.size()),
              sizeof(NodeStat) * stats.size());
     if (param.size_leaf_vector != 0) {

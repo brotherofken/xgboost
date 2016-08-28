@@ -168,6 +168,7 @@ class Learner : public rabit::Serializable {
    */
   static Learner* Create(const std::vector<DMatrix*>& cache_data);
 
+  GradientBooster *GetBoosterPtr() { return gbm_.get(); }
  protected:
   /*! \brief internal base score of the model */
   bst_float base_score_;

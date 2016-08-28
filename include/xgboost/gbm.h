@@ -125,7 +125,12 @@ class GradientBooster {
    * \return a vector of dump for boosters.
    */
   virtual std::vector<std::string> Dump2Text(const FeatureMap& fmap, int option) const = 0;
-  /*!
+
+  virtual int GetBoostedNumber() const = 0;
+  virtual float GetBoostedWeigth(int boosted_index) const = 0;
+  virtual void SetBoostedWeigth(int boosted_index, const float) = 0;
+
+    /*!
    * \brief create a gradient booster from given name
    * \param name name of gradient booster
    * \return The created booster.

@@ -476,4 +476,15 @@ XGB_DLL int XGBoosterLoadRabitCheckpoint(
  */
 XGB_DLL int XGBoosterSaveRabitCheckpoint(BoosterHandle handle);
 
+XGB_DLL int XGBoosterSetTreeWeight(BoosterHandle handle,
+                                   const int index,
+                                   const float value);
+
+XGB_DLL int XGBoosterGetTreeWeight(BoosterHandle handle,
+                                   const int name,
+                                   float *value);
+
+XGB_DLL int XGBoosterGetTreeNumber(BoosterHandle handle,
+                                   int* count);
+
 #endif  // XGBOOST_C_API_H_

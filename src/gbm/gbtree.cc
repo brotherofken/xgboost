@@ -128,6 +128,18 @@ class GBTree : public GradientBooster {
  public:
   GBTree() : num_pbuffer(0) {}
 
+  int GetBoostedNumber() const {
+    return trees.size();
+  }
+
+  float GetBoostedWeigth(int boosted_index) const {
+    return (*trees[boosted_index]).param.weight;
+  }
+
+  void SetBoostedWeigth(int boosted_index, const float weigth) {
+    (*trees[boosted_index]).param.weight = weigth;
+  }
+
   void Configure(const std::vector<std::pair<std::string, std::string> >& cfg) override {
     this->cfg = cfg;
     // initialize model parameters if not yet been initialized.
@@ -727,6 +739,16 @@ class Dart : public GBTree {
     idx_drop.clear();
     return num_drop;
   }
+
+    virtual float GetBoostedWeigth(int boosted_index) const {
+        std::cerr << "NOT IMPLEMENTED";
+        throw std::runtime_error("NOT IMPLEMENTED");
+        return 0.f;
+    }
+    virtual void SetBoostedWeigth(int boosted_index, const float weigth) {
+        std::cerr << "NOT IMPLEMENTED";
+        throw std::runtime_error("NOT IMPLEMENTED");
+    }
 
   // --- data structure ---
   // training parameter

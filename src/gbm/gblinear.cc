@@ -87,6 +87,11 @@ struct GBLinearTrainParam : public dmlc::Parameter<GBLinearTrainParam> {
  */
 class GBLinear : public GradientBooster {
  public:
+  int GetBoostedNumber() const {
+      std::cerr << "NOT IMPLEMENTED";
+      throw std::runtime_error("NOT IMPLEMENTED");
+  }
+
   void Configure(const std::vector<std::pair<std::string, std::string> >& cfg) override {
     if (model.weight.size() == 0) {
       model.param.InitAllowUnknown(cfg);
@@ -231,7 +236,17 @@ class GBLinear : public GradientBooster {
     return v;
   }
 
- protected:
+  virtual float GetBoostedWeigth(int boosted_index) const {
+    std::cerr << "NOT IMPLEMENTED";
+    throw std::runtime_error("NOT IMPLEMENTED");
+    return 0.f;
+  }
+  virtual void SetBoostedWeigth(int boosted_index, const float weigth) {
+    std::cerr << "NOT IMPLEMENTED";
+    throw std::runtime_error("NOT IMPLEMENTED");
+  }
+
+protected:
   inline void Pred(const RowBatch::Inst &inst, float *preds, int gid) {
     float psum = model.bias()[gid];
     for (bst_uint i = 0; i < inst.length; ++i) {

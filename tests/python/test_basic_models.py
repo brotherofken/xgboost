@@ -60,6 +60,7 @@ class TestModels(unittest.TestCase):
             param['normalize_type'] = p[1]
             bst = xgb.train(param, dtrain, num_round, watchlist)
             preds = bst.predict(dtest, ntree_limit=num_round)
+
             err = sum(1 for i in range(len(preds)) if int(preds[i] > 0.5) != labels[i]) / float(len(preds))
             assert err < 0.1
             preds_list.append(preds)
