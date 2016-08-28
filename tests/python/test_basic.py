@@ -123,6 +123,10 @@ class TestBasic(unittest.TestCase):
         bst.get_tree_weight(0)
         bst.set_tree_weight(0, 128.0)
         bst.get_tree_weight(0)
+
+        bst.get_tree_weight(22)
+        bst.set_tree_weight(22, 128.0)
+        bst.get_tree_weight(22)
         # this is prediction
         # preds = bst.predict(dtest)
         # labels = dtest.get_label()

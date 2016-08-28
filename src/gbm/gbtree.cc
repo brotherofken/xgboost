@@ -129,15 +129,24 @@ class GBTree : public GradientBooster {
   GBTree() : num_pbuffer(0) {}
 
   int GetBoostedNumber() const {
-    return trees.size();
+    return int(trees.size());
   }
 
   float GetBoostedWeigth(int boosted_index) const {
-    return (*trees[boosted_index]).param.weight;
+    if (0 <= boosted_index && boosted_index < trees.size()) {
+        return (*trees[boosted_index]).param.weight;
+    } else {
+        std::cerr << "GetBoostedWeigth: index out of range, return 0.f" << std::endl;
+        return 0.f;
+    }
   }
 
   void SetBoostedWeigth(int boosted_index, const float weigth) {
-    (*trees[boosted_index]).param.weight = weigth;
+    if (0 <= boosted_index && boosted_index < trees.size()) {
+        (*trees[boosted_index]).param.weight = weigth;
+    } else {
+        std::cerr << "SetBoostedWeigth: index out of range, no changes" << std::endl;
+    }
   }
 
   void Configure(const std::vector<std::pair<std::string, std::string> >& cfg) override {
