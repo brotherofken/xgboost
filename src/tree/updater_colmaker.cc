@@ -95,10 +95,14 @@ class ColMaker: public TreeUpdater {
         // if nothing left to be expand, break
         if (qexpand_.size() == 0) break;
       }
+
+      // ODS hack lr
+      p_tree->param.weight = this->param.learning_rate;
+
       // set all the rest expanding nodes to leaf
       for (size_t i = 0; i < qexpand_.size(); ++i) {
         const int nid = qexpand_[i];
-        (*p_tree)[nid].set_leaf(snode[nid].weight * param.learning_rate);
+        (*p_tree)[nid].set_leaf(snode[nid].weight /* * param.learning_rate*/);
       }
       // remember auxiliary statistics in the tree node
       for (int nid = 0; nid < p_tree->param.num_nodes; ++nid) {
@@ -609,7 +613,8 @@ class ColMaker: public TreeUpdater {
           (*p_tree)[(*p_tree)[nid].cleft()].set_leaf(0.0f, 0);
           (*p_tree)[(*p_tree)[nid].cright()].set_leaf(0.0f, 0);
         } else {
-          (*p_tree)[nid].set_leaf(e.weight * param.learning_rate);
+          // ODS hack lr
+          (*p_tree)[nid].set_leaf(e.weight /** param.learning_rate*/);
         }
       }
     }

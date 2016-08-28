@@ -38,8 +38,13 @@ struct TreeParam : public dmlc::Parameter<TreeParam> {
    * used to store more than one dimensional information in tree
    */
   int size_leaf_vector;
+
+  /*! ODS hack lr
+   * \brief tree weight in param structure.
+   */
+  float weight = 0.f;
   /*! \brief reserved part, make sure alignment works for 64bit */
-  int reserved[31];
+  int reserved[30]; // ODS hack lr: 31 -> 30
   /*! \brief constructor */
   TreeParam() {
     // assert compact alignment
@@ -190,7 +195,7 @@ class TreeModel {
     }
   };
 
- protected:
+protected:
   // vector of nodes
   std::vector<Node> nodes;
   // free node space, used during training process
