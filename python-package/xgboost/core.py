@@ -1237,3 +1237,10 @@ class Booster(object):
         assert 0 <= index < self.get_tree_number(), 'Bad index, should be 0 <= index < %d' % self.get_tree_number()
         new_value = ctypes.c_float(value)
         _check_call(_LIB.XGBoosterSetTreeWeight(self.handle, ctypes.c_int(index), new_value))
+
+    def set_tree_weights(self, indexes_values):
+        for i, v in indexes_values:
+            self.set_tree_weight(i, v)
+
+    def get_tree_weights(self, indexes):
+        return np.array([self.get_tree_weight(i) for i in indexes])
