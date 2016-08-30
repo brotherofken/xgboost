@@ -1228,13 +1228,15 @@ class Booster(object):
         return value.value
 
     def get_tree_weight(self, index):
-        assert 0 <= index < self.get_tree_number(), 'Bad index, should be 0 <= index < %d' % self.get_tree_number()
+        if not 0 <= index < self.get_tree_number():
+            raise IndexError('Bad index, should be 0 <= index < %d' % self.get_tree_number())
         value = ctypes.c_float(0.)
         _check_call(_LIB.XGBoosterGetTreeWeight(self.handle, ctypes.c_int(index), ctypes.byref(value)))
         return value.value
 
     def set_tree_weight(self, index, value):
-        assert 0 <= index < self.get_tree_number(), 'Bad index, should be 0 <= index < %d' % self.get_tree_number()
+        if not 0 <= index < self.get_tree_number():
+            raise IndexError('Bad index, should be 0 <= index < %d' % self.get_tree_number())
         new_value = ctypes.c_float(value)
         _check_call(_LIB.XGBoosterSetTreeWeight(self.handle, ctypes.c_int(index), new_value))
 

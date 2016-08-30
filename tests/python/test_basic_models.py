@@ -200,35 +200,3 @@ class TestModels(unittest.TestCase):
         self.assertRaises(ValueError, bst.predict, dm1)
         bst.predict(dm2)  # success
 
-    def test_weight_change_effect(self):
-        param = {'silent': 1, 'objective': 'binary:logistic',
-                 'booster': 'gbtree', 'alpha': 0.0001, 'lambda': 1}
-        watchlist = [(dtest, 'eval'), (dtrain, 'train')]
-        num_round = 4
-        bst = xgb.train(param, dtrain, num_round, watchlist)
-
-        assert isinstance(bst, xgb.core.Booster)
-
-        preds = bst.predict(dtest)
-        labels = dtest.get_label()
-
-        err = sum(1 for i in range(len(preds))
-                  if int(preds[i] > 0.5) != labels[i]) / float(len(preds))
-        assert err < 0.1
-
-        # ODS!!!
-        bst.set_tree_weights([(i, (i + 1) * (bst.get_tree_number() - i)) for i in range(bst.get_tree_number())])
-
-        #condition = lambda x: x == 1000
-        #assert all(map(condition, bst.get_tree_weights(range(bst.get_tree_number()))))
-
-        newpreds = bst.predict(dtest)
-
-        newerr = sum(1 for i in range(len(newpreds))
-                  if int(preds[i] > 0.5) != labels[i]) / float(len(newpreds))
-        print(">>> Error {}".format(err))
-        print(">>> New error {}".format(newerr))
-        print(">>> \tOld pred\tNew pred")
-        for p_old, p_new in zip(preds[:5], newpreds[:5]):
-            print(">>> \t{}\t{}".format(p_old, p_new))
-            assert p_old != p_new
