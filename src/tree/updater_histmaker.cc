@@ -128,6 +128,7 @@ class HistMaker: public BaseMaker {
     this->InitData(gpair, *p_fmat, *p_tree);
     this->InitWorkSet(p_fmat, *p_tree, &fwork_set);
     // mark root node as fresh.
+    p_tree->param.weight = param.learning_rate;
     for (int i = 0; i < p_tree->param.num_roots; ++i) {
       (*p_tree)[i].set_leaf(0.0f, 0);
     }
@@ -147,7 +148,7 @@ class HistMaker: public BaseMaker {
     }
     for (size_t i = 0; i < qexpand.size(); ++i) {
       const int nid = qexpand[i];
-      (*p_tree)[nid].set_leaf(p_tree->stat(nid).base_weight * param.learning_rate);
+      (*p_tree)[nid].set_leaf(p_tree->stat(nid).base_weight /** param.learning_rate*/); //ODS hack lr
     }
   }
   // this function does two jobs

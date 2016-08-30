@@ -42,6 +42,15 @@ class TrackerLogger : public BaseLogger {
 #define LOG(severity) LOG_##severity.stream()
 #endif
 
+//#define ODS_LOG_ENABLED
+#ifdef ODS_LOG_ENABLED
+#define ODS_LOG(X) std::cerr << X << std::endl;
+#define ODS_LOGNLF(X) std::cerr << X;
+#else
+#define ODS_LOG(X)
+#define ODS_LOGNLF(X)
+#endif
+
 // Enable LOG(CONSOLE) for print messages to console.
 #define LOG_CONSOLE ::xgboost::ConsoleLogger()
 // Enable LOG(TRACKER) for print messages to tracker

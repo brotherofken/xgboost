@@ -114,10 +114,8 @@ class TreeModel {
     }
     /*! \return get leaf value of leaf node */
     inline float leaf_value() const {
-      if(my_tree == nullptr) {
-        std::cerr << "fuck";
-      }
-      return (this->info_).leaf_value * this->my_tree->param.weight;
+      //if(my_tree == nullptr) { std::cerr << "leaf_value tree is nullptr"; }
+      return (this->info_).leaf_value; // * this->my_tree->param.weight;
     }
     /*! \return get split condition of the node */
     inline TSplitCond split_cond() const {
@@ -318,6 +316,7 @@ protected:
    */
   inline void Load(dmlc::Stream* fi) {
     CHECK_EQ(fi->Read(&param, sizeof(TreeParam)), sizeof(TreeParam));
+    ODS_LOG("Tree Load: param.weight : " << param.weight);
     nodes.resize(param.num_nodes, Node(this));
     stats.resize(param.num_nodes);
     CHECK_NE(param.num_nodes, 0);
@@ -346,6 +345,7 @@ protected:
     CHECK_EQ(param.num_nodes, static_cast<int>(nodes.size()));
     CHECK_EQ(param.num_nodes, static_cast<int>(stats.size()));
     fo->Write(&param, sizeof(TreeParam));
+    ODS_LOG("Tree Save: param.weight : " << param.weight);
     CHECK_NE(param.num_nodes, 0);
     fo->Write(dmlc::BeginPtr(nodes), sizeof(Node) * nodes.size());
     fo->Write(dmlc::BeginPtr(stats), sizeof(NodeStat) * nodes.size());

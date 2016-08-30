@@ -51,10 +51,12 @@ class Booster {
 
   inline void LazyInit() {
     if (!configured_) {
+      ODS_LOG("LazyInit::Configure")
       learner_->Configure(cfg_);
       configured_ = true;
     }
     if (!initialized_) {
+      ODS_LOG("LazyInit::InitModel")
       learner_->InitModel();
       initialized_ = true;
     }
@@ -744,8 +746,9 @@ XGB_DLL int XGBoosterSetTreeWeight(BoosterHandle handle,
 {
     API_BEGIN();
     Booster* bst = static_cast<Booster*>(handle);
+    bst->LazyInit();
     bst->learner()->GetBoosterPtr()->SetBoostedWeigth(index, value);
-    std::cerr << "XGBoosterSetTreeWeight: " << index << " " << value << std::endl;
+    ODS_LOG("XGBoosterSetTreeWeight: " << index << " " << value);
     API_END();
 }
 
@@ -755,8 +758,9 @@ XGB_DLL int XGBoosterGetTreeWeight(BoosterHandle handle,
 {
     API_BEGIN();
     Booster* bst = static_cast<Booster*>(handle);
+    bst->LazyInit();
     *value = bst->learner()->GetBoosterPtr()->GetBoostedWeigth(index);
-    std::cerr << "XGBoosterGetTreeWeight: " << index << " " << *value << std::endl;
+    ODS_LOG("XGBoosterGetTreeWeight: " << index << " " << *value);
     API_END();
 }
 
@@ -765,7 +769,8 @@ XGB_DLL int XGBoosterGetTreeNumber(BoosterHandle handle,
 {
     API_BEGIN();
     Booster* bst = static_cast<Booster*>(handle);
+    bst->LazyInit();
     *count = bst->learner()->GetBoosterPtr()->GetBoostedNumber();
-    std::cerr << "XGBoosterGetTreeNumber: " << *count << std::endl;
+    ODS_LOG("XGBoosterGetTreeNumber: " << *count);
     API_END();
 }

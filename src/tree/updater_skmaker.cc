@@ -67,9 +67,10 @@ class SketchMaker: public BaseMaker {
       }
     }
     // set left leaves
+    p_tree->param.weight = param.learning_rate;
     for (size_t i = 0; i < qexpand.size(); ++i) {
       const int nid = qexpand[i];
-      (*p_tree)[nid].set_leaf(p_tree->stat(nid).base_weight * param.learning_rate);
+      (*p_tree)[nid].set_leaf(p_tree->stat(nid).base_weight);
     }
   }
   // define the sketch we want to use

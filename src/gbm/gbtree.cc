@@ -125,6 +125,14 @@ struct GBTreeModelParam : public dmlc::Parameter<GBTreeModelParam> {
 
 // gradient boosted trees
 class GBTree : public GradientBooster {
+   void show_tree_weights() const {
+       int i = 0;
+       for(const auto& tree : trees) {
+           ODS_LOGNLF("  " << i << ":" << tree->param.weight);
+           ++i;
+       }
+     ODS_LOG("");
+   }
  public:
   GBTree() : num_pbuffer(0) {}
 
@@ -143,7 +151,9 @@ class GBTree : public GradientBooster {
 
   void SetBoostedWeigth(int boosted_index, const float weigth) {
     if (0 <= boosted_index && boosted_index < trees.size()) {
+        ODS_LOG("GBTree::SetBoostedWeigth " << boosted_index << " to " << weigth)
         (*trees[boosted_index]).param.weight = weigth;
+        ODS_LOG("GBTree::SetBoostedWeigth Result " << (*trees[boosted_index]).param.weight)
     } else {
         std::cerr << "SetBoostedWeigth: index out of range, no changes" << std::endl;
     }
@@ -162,6 +172,7 @@ class GBTree : public GradientBooster {
     for (const auto& up : updaters) {
       up->Init(cfg);
     }
+      show_tree_weights();
   }
 
   void Load(dmlc::Stream* fi) override {
@@ -183,6 +194,7 @@ class GBTree : public GradientBooster {
                                        common::ToString(mparam.num_feature)));
     // clear the predict buffer.
     this->ResetPredBuffer(num_pbuffer);
+      show_tree_weights();
   }
 
   void Save(dmlc::Stream* fo) const override {
@@ -194,6 +206,7 @@ class GBTree : public GradientBooster {
     if (tree_info.size() != 0) {
       fo->Write(dmlc::BeginPtr(tree_info), sizeof(int) * tree_info.size());
     }
+      show_tree_weights();
   }
 
   void ResetPredBuffer(size_t num_pbuffer) override {
@@ -244,6 +257,9 @@ class GBTree : public GradientBooster {
                std::vector<float>* out_preds,
                unsigned ntree_limit) override {
     const MetaInfo& info = p_fmat->info();
+
+    ODS_LOG("ENTER GBTRee::Predict DMatrix " << info.num_row << "x" << info.num_col);
+    show_tree_weights();
     int nthread;
     #pragma omp parallel
     {
@@ -288,6 +304,8 @@ class GBTree : public GradientBooster {
                std::vector<float>* out_preds,
                unsigned ntree_limit,
                unsigned root_index) override {
+    ODS_LOG("ENTER GBTRee::Predict SparseBatch");
+      show_tree_weights();
     if (thread_temp.size() == 0) {
       thread_temp.resize(1, RegTree::FVec());
       thread_temp[0].Init(mparam.num_feature);
@@ -304,6 +322,7 @@ class GBTree : public GradientBooster {
   void PredictLeaf(DMatrix* p_fmat,
                    std::vector<float>* out_preds,
                    unsigned ntree_limit) override {
+    ODS_LOG("ENTER GBTRee::PredictLeaf DMatrix");
     int nthread;
     #pragma omp parallel
     {
@@ -353,6 +372,7 @@ class GBTree : public GradientBooster {
     }
     // update the trees
     for (auto& up : updaters) {
+      ODS_LOG("APPLY updater to trees ")
       up->Update(gpair, p_fmat, new_trees);
     }
     // optimization, update buffer, if possible
@@ -419,6 +439,8 @@ class GBTree : public GradientBooster {
                    float *out_pred,
                    size_t stride,
                    unsigned ntree_limit) {
+    ODS_LOG("ENTER GBTRee::Predict RowBatch " << inst.length);
+    show_tree_weights();
     size_t itop = 0;
     float  psum = 0.0f;
     // sum of leaf vector
@@ -426,22 +448,26 @@ class GBTree : public GradientBooster {
     const int64_t bid = this->BufferOffset(buffer_index, bst_group);
     // number of valid trees
     unsigned treeleft = ntree_limit == 0 ? std::numeric_limits<unsigned>::max() : ntree_limit;
+
     // load buffered results if any
-    if (bid >= 0 && ntree_limit == 0) {
-      itop = pred_counter[bid];
-      psum = pred_buffer[bid];
-      for (int i = 0; i < mparam.size_leaf_vector; ++i) {
-        vec_psum[i] = pred_buffer[bid + i + 1];
-      }
-    }
+// BLOCK BUFFERING
+//    if (bid >= 0 && ntree_limit == 0) {
+//      itop = pred_counter[bid];
+//      psum = pred_buffer[bid];
+//      for (int i = 0; i < mparam.size_leaf_vector; ++i) {
+//        vec_psum[i] = pred_buffer[bid + i + 1];
+//      }
+//    }
     if (itop != trees.size()) {
       p_feats->Fill(inst);
       for (size_t i = itop; i < trees.size(); ++i) {
         if (tree_info[i] == bst_group) {
           int tid = trees[i]->GetLeafIndex(*p_feats, root_index);
-          psum += (*trees[i])[tid].leaf_value();
+          ODS_LOG("GBTRee::Predict tree weight "  << (*trees[i])[tid].leaf_value() << " " << trees[i]->param.weight);
+
+          psum += (*trees[i])[tid].leaf_value() * trees[i]->param.weight;
           for (int j = 0; j < mparam.size_leaf_vector; ++j) {
-            vec_psum[j] += trees[i]->leafvec(tid)[j];
+            vec_psum[j] += trees[i]->leafvec(tid)[j] * trees[i]->param.weight;
           }
           if (--treeleft == 0) break;
         }
@@ -664,9 +690,9 @@ class Dart : public GBTree {
         bool drop = (std::find(idx_drop.begin(), idx_drop.end(), i) != idx_drop.end());
         if (!drop) {
           int tid = trees[i]->GetLeafIndex(*p_feats, root_index);
-          psum += weight_drop[i] * (*trees[i])[tid].leaf_value();
+          psum += weight_drop[i] * (*trees[i])[tid].leaf_value() * trees[i]->param.weight;
           for (int j = 0; j < mparam.size_leaf_vector; ++j) {
-            vec_psum[j] += weight_drop[i] * trees[i]->leafvec(tid)[j];
+            vec_psum[j] += weight_drop[i] * trees[i]->leafvec(tid)[j] * trees[i]->param.weight;
           }
         }
       }
