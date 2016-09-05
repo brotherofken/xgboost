@@ -1246,3 +1246,6 @@ class Booster(object):
 
     def get_tree_weights(self, indexes):
         return np.array([self.get_tree_weight(i) for i in indexes])
+
+    def reset_pred_buffer(self):
+        _check_call(_LIB.XGBoosterResetPredBuffers(self.handle))

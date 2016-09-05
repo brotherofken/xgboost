@@ -198,7 +198,7 @@ class TestBasic(unittest.TestCase):
 
         # condition = lambda x: x == 1000
         # assert all(map(condition, bst.get_tree_weights(range(bst.get_tree_number()))))
-
+        bst.reset_pred_buffer()
         newpreds = bst.predict(dtest)
 
         newerr = sum(1 for i in range(len(newpreds))

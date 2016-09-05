@@ -209,8 +209,8 @@ class GBTree : public GradientBooster {
       show_tree_weights();
   }
 
-  void ResetPredBuffer(size_t num_pbuffer) override {
-    this->num_pbuffer = num_pbuffer;
+  void ResetPredBuffer(size_t num_pbuffer_ = 0) override {
+    this->num_pbuffer = num_pbuffer_ == 0 ? this->num_pbuffer : num_pbuffer_;
     pred_buffer.clear();
     pred_counter.clear();
     pred_buffer.resize(this->PredBufferSize(), 0.0f);
@@ -450,14 +450,13 @@ class GBTree : public GradientBooster {
     unsigned treeleft = ntree_limit == 0 ? std::numeric_limits<unsigned>::max() : ntree_limit;
 
     // load buffered results if any
-// BLOCK BUFFERING
-//    if (bid >= 0 && ntree_limit == 0) {
-//      itop = pred_counter[bid];
-//      psum = pred_buffer[bid];
-//      for (int i = 0; i < mparam.size_leaf_vector; ++i) {
-//        vec_psum[i] = pred_buffer[bid + i + 1];
-//      }
-//    }
+    if (bid >= 0 && ntree_limit == 0) {
+      itop = pred_counter[bid];
+      psum = pred_buffer[bid];
+      for (int i = 0; i < mparam.size_leaf_vector; ++i) {
+        vec_psum[i] = pred_buffer[bid + i + 1];
+      }
+    }
     if (itop != trees.size()) {
       p_feats->Fill(inst);
       for (size_t i = itop; i < trees.size(); ++i) {

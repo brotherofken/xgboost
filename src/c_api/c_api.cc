@@ -774,3 +774,13 @@ XGB_DLL int XGBoosterGetTreeNumber(BoosterHandle handle,
     ODS_LOG("XGBoosterGetTreeNumber: " << *count);
     API_END();
 }
+
+XGB_DLL int XGBoosterResetPredBuffers(BoosterHandle handle)
+{
+    API_BEGIN();
+    Booster* bst = static_cast<Booster*>(handle);
+    bst->LazyInit();
+    bst->learner()->GetBoosterPtr()->ResetPredBuffer(0);
+    ODS_LOG("XGBoosterResetPredBuffers");
+    API_END();
+}
